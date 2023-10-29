@@ -223,7 +223,7 @@ while encryption is True:
         if choice == '1':
             print(f'Полученный шифр: {encrypt_vigenere(text, key)}')
         elif choice == '2':
-            print(f'Полученная расшифровка: {encrypt_vigenere(text, key)}')
+            print(f'Полученная расшифровка: {decrypt_vigenere(text, key)}')
 
         # продолжать или нет?
         encryption = continue_encrypt()
