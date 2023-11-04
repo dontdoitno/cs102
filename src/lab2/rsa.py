@@ -21,8 +21,6 @@ def is_prime(n: int) -> bool:
             return False
     return True
 
-
-
 def gcd(a: int, b: int) -> int:
     """
     Euclid's algorithm for determining the greatest common divisor.
@@ -35,23 +33,44 @@ def gcd(a: int, b: int) -> int:
         a, b = b, a % b
     return a
 
+def extended_gcd(a, b):
+    '''
+    функция для вычисления расширенного алгоритма Евклида
+    '''
+    # Базовый случай: если a равно 0, возвращаем (b, 0, 1)
+    if a == 0:
+        return (b, 0, 1)
+    else:
+        # Рекурсивно вызываем extended_gcd с новыми значениями
+        gcd, x, y = extended_gcd(b % a, a)
+        return (gcd, y - (b // a) * x, x)
 
 def multiplicative_inverse(e: int, phi: int) -> int:
     """
     Euclid's extended algorithm for finding the multiplicative
     inverse of two numbers.
+    >>> multiplicative_inverse(17, 3120)
+    2753
     >>> multiplicative_inverse(7, 40)
     23
+    >>> multiplicative_inverse(3, 7)
+    5
     """
-    d, x1, x2, y1, phi_copy = 0, 1, 0, 1, phi
 
-    while e > 0:
-        q = phi_copy // e
-        e, phi_copy = phi_copy % e, e
-        x1, x2 = x2, x1 - q * x2
-        d, y1 = y1, d - q * y1
+    # Находим НОД (наибольший общий делитель) чисел e и phi с помощью расширенного алгоритма Евклида
+    gcd_value = gcd(e, phi)
 
-    return d % phi
+    # Если НОД не равен 1, то обратного по умножению элемента не существует, и вызываем исключение
+    if gcd_value != 1:
+        raise ValueError("The multiplicative inverse does not exist.")
+    else:
+        # Распаковываем результат extended_gcd и вычисляем d (обратный элемент по умножению)
+        # игнорирование двух переменных
+        _, x, _ = extended_gcd(e, phi)
+        d = x % phi
+        return d
+
+
 
 
 def generate_keypair(p: int, q: int) -> tp.Tuple[tp.Tuple[int, int], tp.Tuple[int, int]]:
