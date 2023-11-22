@@ -128,13 +128,10 @@ def find_empty_positions(grid: tp.List[tp.List[str]]) -> tp.Optional[tp.Tuple[in
     """
     row, col = len(grid[0]), len(grid)  # длина строк и столбцов в судоку
 
-    res = []
     for r in range(row):
         for c in range(col):
             if grid[r][c] == '.':
-                res.append(r)
-                res.append(c)
-    return tuple(res)
+                return r, c  # возвращаем кортеж
 
 
 def find_possible_values(grid: tp.List[tp.List[str]], pos: tp.Tuple[int, int]) -> tp.Set[str]:
@@ -147,7 +144,6 @@ def find_possible_values(grid: tp.List[tp.List[str]], pos: tp.Tuple[int, int]) -
     >>> values == {'2', '5', '9'}
     True
     """
-    row, col = pos
     size = len(grid)
 
     # Собираем значения из строки, столбца и блока
@@ -174,7 +170,35 @@ def solve(grid: tp.List[tp.List[str]]) -> tp.Optional[tp.List[tp.List[str]]]:
     >>> solve(grid)
     [['5', '3', '4', '6', '7', '8', '9', '1', '2'], ['6', '7', '2', '1', '9', '5', '3', '4', '8'], ['1', '9', '8', '3', '4', '2', '5', '6', '7'], ['8', '5', '9', '7', '6', '1', '4', '2', '3'], ['4', '2', '6', '8', '5', '3', '7', '9', '1'], ['7', '1', '3', '9', '2', '4', '8', '5', '6'], ['9', '6', '1', '5', '3', '7', '2', '8', '4'], ['2', '8', '7', '4', '1', '9', '6', '3', '5'], ['3', '4', '5', '2', '8', '6', '1', '7', '9']]
     """
-    pass
+
+    empty_position = find_empty_positions(grid)
+
+    # Если нет свободных позиций, пазл уже решен
+    if not empty_position:
+        return grid
+
+    row, col = empty_position
+
+    # Находим все возможные значения для свободной позиции
+    possible_values = find_possible_values(grid, empty_position)
+
+    # Пытаемся установить каждое возможное значение
+    for value in possible_values:
+        # Устанавливаем значение на позицию
+        grid[row][col] = value
+
+        # Рекурсивно вызываем solve для оставшейся части пазла
+        solution = solve(grid)
+
+        # Если найдено решение, возвращаем пазл
+        if solution:
+            return solution
+
+        # Если не найдено решение, отменяем установку значения
+        grid[row][col] = '.'
+
+    # Если ни для одного из возможных значений не найдено решение
+    return None
 
 
 def check_solution(solution: tp.List[tp.List[str]]) -> bool:
