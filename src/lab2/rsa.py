@@ -11,10 +11,15 @@ def is_prime(n: int) -> bool:
     True
     >>> is_prime(8)
     False
+    >>> is_prime(1)
+    False
     """
-    # PUT YOUR CODE HERE
-    pass
-
+    if n == 1:
+        return False
+    for div in range(2, n):
+        if (n % div) == 0:
+            return False
+    return True
 
 def gcd(a: int, b: int) -> int:
     """
@@ -24,19 +29,48 @@ def gcd(a: int, b: int) -> int:
     >>> gcd(3, 7)
     1
     """
-    # PUT YOUR CODE HERE
-    pass
+    while b:
+        a, b = b, a % b
+    return a
 
+def extended_gcd(a, b):
+    '''
+    функция для вычисления расширенного алгоритма Евклида
+    '''
+    # Базовый случай: если a равно 0, возвращаем (b, 0, 1)
+    if a == 0:
+        return (b, 0, 1)
+    else:
+        # Рекурсивно вызываем extended_gcd с новыми значениями
+        gcd, x, y = extended_gcd(b % a, a)
+        return (gcd, y - (b // a) * x, x)
 
 def multiplicative_inverse(e: int, phi: int) -> int:
     """
     Euclid's extended algorithm for finding the multiplicative
     inverse of two numbers.
+    >>> multiplicative_inverse(17, 3120)
+    2753
     >>> multiplicative_inverse(7, 40)
     23
+    >>> multiplicative_inverse(3, 7)
+    5
     """
-    # PUT YOUR CODE HERE
-    pass
+
+    # Находим НОД (наибольший общий делитель) чисел e и phi с помощью расширенного алгоритма Евклида
+    gcd_value = gcd(e, phi)
+
+    # Если НОД не равен 1, то обратного по умножению элемента не существует, и вызываем исключение
+    if gcd_value != 1:
+        raise ValueError("The multiplicative inverse does not exist.")
+    else:
+        # Распаковываем результат extended_gcd и вычисляем d (обратный элемент по умножению)
+        # игнорирование двух переменных
+        _, x, _ = extended_gcd(e, phi)
+        d = x % phi
+        return d
+
+
 
 
 def generate_keypair(p: int, q: int) -> tp.Tuple[tp.Tuple[int, int], tp.Tuple[int, int]]:
@@ -45,11 +79,9 @@ def generate_keypair(p: int, q: int) -> tp.Tuple[tp.Tuple[int, int], tp.Tuple[in
     elif p == q:
         raise ValueError("p and q cannot be equal")
 
-    # n = pq
-    # PUT YOUR CODE HERE
+    n = p * q
 
-    # phi = (p-1)(q-1)
-    # PUT YOUR CODE HERE
+    phi = (p - 1) * (q - 1)
 
     # Choose an integer e such that e and phi(n) are coprime
     e = random.randrange(1, phi)
