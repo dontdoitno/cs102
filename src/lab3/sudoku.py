@@ -1,4 +1,5 @@
 import pathlib
+import random
 import typing as tp
 
 T = tp.TypeVar("T")
@@ -287,8 +288,23 @@ def generate_sudoku(N: int) -> tp.List[tp.List[str]]:
     >>> check_solution(solution)
     True
     """
-    pass
 
+    # Создаем пустую сетку
+    grid = [['.' for _ in range(9)] for _ in range(9)]
+
+    # Решаем пустую сетку
+    solution = solve(grid)
+
+    # Оставляем N элементов
+    cells_to_remove = 81 - N
+    positions = [(row, col) for row in range(9) for col in range(9)]
+    random.shuffle(positions)
+
+    for pos in positions[:cells_to_remove]:
+        row, col = pos
+        grid[row][col] = '.'
+
+    return grid
 
 if __name__ == "__main__":
     for fname in ["puzzle1.txt", "puzzle2.txt", "puzzle3.txt"]:
