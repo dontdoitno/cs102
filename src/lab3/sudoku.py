@@ -1,4 +1,5 @@
 import pathlib
+import random
 import typing as tp
 
 T = tp.TypeVar("T")
@@ -41,7 +42,16 @@ def group(values: tp.List[T], n: int) -> tp.List[tp.List[T]]:
     >>> group([1,2,3,4,5,6,7,8,9], 3)
     [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
     """
-    pass
+    matrix = [[0] * n for _ in range(n)]  # Создаем пустую матрицу с нулями
+
+    pos = 0  # текущая позиция в списке
+    # заполняем пустую матрицу нужными значениями
+    for i in range(n):
+        for j in range(n):
+            matrix[i][j] = values[pos]
+            pos += 1
+
+    return matrix
 
 
 def get_row(grid: tp.List[tp.List[str]], pos: tp.Tuple[int, int]) -> tp.List[str]:
@@ -53,7 +63,9 @@ def get_row(grid: tp.List[tp.List[str]], pos: tp.Tuple[int, int]) -> tp.List[str
     >>> get_row([['1', '2', '3'], ['4', '5', '6'], ['.', '8', '9']], (2, 0))
     ['.', '8', '9']
     """
-    pass
+    row, col = pos
+
+    return grid[row]
 
 
 def get_col(grid: tp.List[tp.List[str]], pos: tp.Tuple[int, int]) -> tp.List[str]:
@@ -65,7 +77,13 @@ def get_col(grid: tp.List[tp.List[str]], pos: tp.Tuple[int, int]) -> tp.List[str
     >>> get_col([['1', '2', '3'], ['4', '5', '6'], ['.', '8', '9']], (0, 2))
     ['3', '6', '9']
     """
-    pass
+    row, col = pos
+
+    res = []
+    for r in range(len(grid[0])):
+        res.append(grid[r][col])
+
+    return res
 
 
 def get_block(grid: tp.List[tp.List[str]], pos: tp.Tuple[int, int]) -> tp.List[str]:
@@ -78,7 +96,26 @@ def get_block(grid: tp.List[tp.List[str]], pos: tp.Tuple[int, int]) -> tp.List[s
     >>> get_block(grid, (8, 8))
     ['2', '8', '.', '.', '.', '5', '.', '7', '9']
     """
-    pass
+    row, col = pos
+    size = len(grid)
+
+    # Находим размер блока (квадрата)
+    block_size = int(size**0.5)
+
+    # Находим номер блока (квадрата) в матрице
+    block_row = row // block_size
+    block_col = col // block_size
+
+    # Вычисляем координаты верхнего левого угла блока
+    start_row, start_col = block_row * block_size, block_col * block_size
+
+    # Собираем значения из блока
+    block_values = []
+    for i in range(start_row, start_row + block_size):
+        for j in range(start_col, start_col + block_size):
+            block_values.append(grid[i][j])
+
+    return block_values
 
 
 def find_empty_positions(grid: tp.List[tp.List[str]]) -> tp.Optional[tp.Tuple[int, int]]:
@@ -90,7 +127,12 @@ def find_empty_positions(grid: tp.List[tp.List[str]]) -> tp.Optional[tp.Tuple[in
     >>> find_empty_positions([['1', '2', '3'], ['4', '5', '6'], ['.', '8', '9']])
     (2, 0)
     """
-    pass
+    row, col = len(grid[0]), len(grid)  # длина строк и столбцов в судоку
+
+    for r in range(row):
+        for c in range(col):
+            if grid[r][c] == '.':
+                return r, c  # возвращаем кортеж
 
 
 def find_possible_values(grid: tp.List[tp.List[str]], pos: tp.Tuple[int, int]) -> tp.Set[str]:
@@ -103,7 +145,18 @@ def find_possible_values(grid: tp.List[tp.List[str]], pos: tp.Tuple[int, int]) -
     >>> values == {'2', '5', '9'}
     True
     """
-    pass
+    size = len(grid)
+
+    # Собираем значения из строки, столбца и блока
+    row_values = set(get_row(grid, pos))
+    col_values = set(get_col(grid, pos))
+    block_values = set(get_block(grid, pos))
+
+    # Объединяем значения из строки, столбца и блока
+    all_values = row_values | col_values | block_values
+
+    # Возвращаем разность множеств (все возможные значения за исключением уже заполненных)
+    return set(map(str, range(1, size + 1))) - all_values
 
 
 def solve(grid: tp.List[tp.List[str]]) -> tp.Optional[tp.List[tp.List[str]]]:
@@ -118,13 +171,100 @@ def solve(grid: tp.List[tp.List[str]]) -> tp.Optional[tp.List[tp.List[str]]]:
     >>> solve(grid)
     [['5', '3', '4', '6', '7', '8', '9', '1', '2'], ['6', '7', '2', '1', '9', '5', '3', '4', '8'], ['1', '9', '8', '3', '4', '2', '5', '6', '7'], ['8', '5', '9', '7', '6', '1', '4', '2', '3'], ['4', '2', '6', '8', '5', '3', '7', '9', '1'], ['7', '1', '3', '9', '2', '4', '8', '5', '6'], ['9', '6', '1', '5', '3', '7', '2', '8', '4'], ['2', '8', '7', '4', '1', '9', '6', '3', '5'], ['3', '4', '5', '2', '8', '6', '1', '7', '9']]
     """
-    pass
+
+    empty_position = find_empty_positions(grid)
+
+    # Если нет свободных позиций, пазл уже решен
+    if not empty_position:
+        return grid
+
+    row, col = empty_position
+
+    # Находим все возможные значения для свободной позиции
+    possible_values = find_possible_values(grid, empty_position)
+
+    # Пытаемся установить каждое возможное значение
+    for value in possible_values:
+        # Устанавливаем значение на позицию
+        grid[row][col] = value
+
+        # Рекурсивно вызываем solve для оставшейся части пазла
+        solution = solve(grid)
+
+        # Если найдено решение, возвращаем пазл
+        if solution:
+            return solution
+
+        # Если не найдено решение, отменяем установку значения
+        grid[row][col] = '.'
+
+    # Если ни для одного из возможных значений не найдено решение
+    return None
 
 
 def check_solution(solution: tp.List[tp.List[str]]) -> bool:
-    """ Если решение solution верно, то вернуть True, в противном случае False """
-    # TODO: Add doctests with bad puzzles
-    pass
+    """ Если решение solution верно, то вернуть True, в противном случае False
+    >>> correct_solution = [
+    ...     ['5', '3', '4', '6', '7', '8', '9', '1', '2'],
+    ...     ['6', '7', '2', '1', '9', '5', '3', '4', '8'],
+    ...     ['1', '9', '8', '3', '4', '2', '5', '6', '7'],
+    ...     ['8', '5', '9', '7', '6', '1', '4', '2', '3'],
+    ...     ['4', '2', '6', '8', '5', '3', '7', '9', '1'],
+    ...     ['7', '1', '3', '9', '2', '4', '8', '5', '6'],
+    ...     ['9', '6', '1', '5', '3', '7', '2', '8', '4'],
+    ...     ['2', '8', '7', '4', '1', '9', '6', '3', '5'],
+    ...     ['3', '4', '5', '2', '8', '6', '1', '7', '9']
+    ... ]
+    >>> check_solution(correct_solution)
+    True
+
+    >>> incorrect_solution = [
+    ...     ['5', '3', '4', '6', '7', '8', '9', '1', '2'],
+    ...     ['6', '7', '2', '1', '9', '5', '3', '4', '8'],
+    ...     ['1', '9', '8', '3', '4', '2', '5', '6', '7'],
+    ...     ['8', '5', '9', '7', '6', '1', '4', '2', '3'],
+    ...     ['4', '2', '6', '8', '5', '3', '7', '9', '1'],
+    ...     ['7', '1', '3', '9', '2', '4', '8', '5', '6'],
+    ...     ['9', '6', '1', '5', '3', '7', '2', '8', '4'],
+    ...     ['2', '8', '7', '4', '1', '9', '6', '3', '5'],
+    ...     ['3', '4', '5', '2', '8', '6', '1', '7', '8']
+    ... ]
+    >>> check_solution(incorrect_solution)
+    False
+    """
+
+    size = len(solution)
+
+    def has_duplicates(values: tp.List[str]) -> bool:
+        """Проверяет, есть ли повторяющиеся значения в списке"""
+        seen = set()
+        for value in values:
+            if value != '.' and value in seen:
+                return True
+            seen.add(value)
+        return False
+
+    # Проверка строк
+    for row in solution:
+        if has_duplicates(row):
+            return False
+
+    # Проверка столбцов
+    for col in range(size):
+        column_values = get_col(solution, (0, col))
+        if has_duplicates(column_values):
+            return False
+
+    # Проверка блоков
+    block_size = int(size**0.5)
+    for row in range(0, size, block_size):
+        for col in range(0, size, block_size):
+            block_values = get_block(solution, (row, col))
+            if has_duplicates(block_values):
+                return False
+
+    # Если все проверки пройдены, возвращаем True
+    return True
 
 
 def generate_sudoku(N: int) -> tp.List[tp.List[str]]:
@@ -148,8 +288,23 @@ def generate_sudoku(N: int) -> tp.List[tp.List[str]]:
     >>> check_solution(solution)
     True
     """
-    pass
 
+    # Создаем пустую сетку
+    grid = [['.' for _ in range(9)] for _ in range(9)]
+
+    # Решаем пустую сетку
+    solution = solve(grid)
+
+    # Оставляем N элементов
+    cells_to_remove = 81 - N
+    positions = [(row, col) for row in range(9) for col in range(9)]
+    random.shuffle(positions)
+
+    for pos in positions[:cells_to_remove]:
+        row, col = pos
+        grid[row][col] = '.'
+
+    return grid
 
 if __name__ == "__main__":
     for fname in ["puzzle1.txt", "puzzle2.txt", "puzzle3.txt"]:
