@@ -202,9 +202,68 @@ def solve(grid: tp.List[tp.List[str]]) -> tp.Optional[tp.List[tp.List[str]]]:
 
 
 def check_solution(solution: tp.List[tp.List[str]]) -> bool:
-    """ Если решение solution верно, то вернуть True, в противном случае False """
-    # TODO: Add doctests with bad puzzles
-    pass
+    """ Если решение solution верно, то вернуть True, в противном случае False
+    >>> correct_solution = [
+    ...     ['5', '3', '4', '6', '7', '8', '9', '1', '2'],
+    ...     ['6', '7', '2', '1', '9', '5', '3', '4', '8'],
+    ...     ['1', '9', '8', '3', '4', '2', '5', '6', '7'],
+    ...     ['8', '5', '9', '7', '6', '1', '4', '2', '3'],
+    ...     ['4', '2', '6', '8', '5', '3', '7', '9', '1'],
+    ...     ['7', '1', '3', '9', '2', '4', '8', '5', '6'],
+    ...     ['9', '6', '1', '5', '3', '7', '2', '8', '4'],
+    ...     ['2', '8', '7', '4', '1', '9', '6', '3', '5'],
+    ...     ['3', '4', '5', '2', '8', '6', '1', '7', '9']
+    ... ]
+    >>> check_solution(correct_solution)
+    True
+
+    >>> incorrect_solution = [
+    ...     ['5', '3', '4', '6', '7', '8', '9', '1', '2'],
+    ...     ['6', '7', '2', '1', '9', '5', '3', '4', '8'],
+    ...     ['1', '9', '8', '3', '4', '2', '5', '6', '7'],
+    ...     ['8', '5', '9', '7', '6', '1', '4', '2', '3'],
+    ...     ['4', '2', '6', '8', '5', '3', '7', '9', '1'],
+    ...     ['7', '1', '3', '9', '2', '4', '8', '5', '6'],
+    ...     ['9', '6', '1', '5', '3', '7', '2', '8', '4'],
+    ...     ['2', '8', '7', '4', '1', '9', '6', '3', '5'],
+    ...     ['3', '4', '5', '2', '8', '6', '1', '7', '8']
+    ... ]
+    >>> check_solution(incorrect_solution)
+    False
+    """
+
+    size = len(solution)
+
+    def has_duplicates(values: tp.List[str]) -> bool:
+        """Проверяет, есть ли повторяющиеся значения в списке"""
+        seen = set()
+        for value in values:
+            if value != '.' and value in seen:
+                return True
+            seen.add(value)
+        return False
+
+    # Проверка строк
+    for row in solution:
+        if has_duplicates(row):
+            return False
+
+    # Проверка столбцов
+    for col in range(size):
+        column_values = get_col(solution, (0, col))
+        if has_duplicates(column_values):
+            return False
+
+    # Проверка блоков
+    block_size = int(size**0.5)
+    for row in range(0, size, block_size):
+        for col in range(0, size, block_size):
+            block_values = get_block(solution, (row, col))
+            if has_duplicates(block_values):
+                return False
+
+    # Если все проверки пройдены, возвращаем True
+    return True
 
 
 def generate_sudoku(N: int) -> tp.List[tp.List[str]]:
