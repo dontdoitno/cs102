@@ -147,19 +147,7 @@ def find_possible_values(grid: tp.List[tp.List[str]], pos: tp.Tuple[int, int]) -
     >>> values == {'2', '5', '9'}
     True
     """
-
-    size = len(grid)  # размер судоку
-
-    # Собираем значения из строки, столбца и блока
-    row_values = set(get_row(grid, pos))
-    col_values = set(get_col(grid, pos))
-    block_values = set(get_block(grid, pos))
-
-    # Объединяем значения из строки, столбца и блока
-    all_values = row_values | col_values | block_values
-
-    # Возвращаем разность множеств (все возможные значения за исключением уже заполненных)
-    return set(map(str, range(1, size + 1))) - all_values
+    pass
 
 
 def solve(grid: tp.List[tp.List[str]]) -> tp.Optional[tp.List[tp.List[str]]]:
